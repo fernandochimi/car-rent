@@ -28,6 +28,4 @@ This is a demo project.
 
 Tests
 ----------------
-
-Docs
-----------------
+To execute tests, type ``make test`` in directory root. For generate html, type ``make html``
