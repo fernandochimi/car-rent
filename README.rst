@@ -5,7 +5,7 @@ Intro
 ----------------
 The Car Rent Project was developed to control the car rents.
 
-The project was developed in Python 2.7, with Django Framework 1.8, combined with Redis server 3. It is work to give a best performance to the system.
+The project was developed in Python 2.7, with Django Framework 1.8.
 
 
 Requirements
