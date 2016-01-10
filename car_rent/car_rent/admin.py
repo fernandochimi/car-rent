@@ -1,7 +1,7 @@
 # coding: utf-8
 from django.contrib import admin
 
-from models import Token, Type, Brand, Transport, City, Map
+from models import Token, Customer, Vehicle, Rent
 
 
 class TokenAdmin(admin.ModelAdmin):
@@ -11,23 +11,22 @@ class TokenAdmin(admin.ModelAdmin):
     search_fields = ("user__username", "token",)
 
 
-class TypeAdmin(admin.ModelAdmin):
-    list_display = ("name", "date_added", "is_active",)
-    list_filter = ("is_active",)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ("name", "cpf", "cnh",)
+    list_filter = ("cnh",)
+    search_fields = ("name", "cpf")
+
+
+class VehicleAdmin(admin.ModelAdmin):
+    list_display = (
+        "name", "vehicle_category", "date_added", "is_avaliable", "is_active",)
+    list_filter = ("vehicle_category", "is_avaliable", "is_active",)
     date_hierarchy = "date_added"
     search_fields = ("name", "slug",)
     prepopulated_fields = {"slug": ("name",)}
 
 
-class BrandAdmin(admin.ModelAdmin):
-    list_display = ("name", "date_added", "is_active",)
-    list_filter = ("is_active",)
-    date_hierarchy = "date_added"
-    search_fields = ("name", "slug",)
-    prepopulated_fields = {"slug": ("name",)}
-
-
-class TransportAdmin(admin.ModelAdmin):
+class RentAdmin(admin.ModelAdmin):
     list_display = ("name", "sign", "autonomy", "date_added", "is_active",)
     list_filter = ("transport_way", "transport_type", "brand", "is_active",)
     date_hierarchy = "date_added"
@@ -35,28 +34,7 @@ class TransportAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
 
 
-class CityAdmin(admin.ModelAdmin):
-    list_display = ("name", "date_added", "is_active",)
-    list_filter = ("is_active",)
-    date_hierarchy = "date_added"
-    search_fields = ("name",)
-    prepopulated_fields = {"slug": ("name",)}
-
-
-class MapAdmin(admin.ModelAdmin):
-    list_display = (
-        "name", "city_origin", "city_destiny",
-        "date_added", "is_active", "cost_percent",)
-    list_filter = ("is_active", "transport__name",)
-    date_hierarchy = "date_added"
-    search_fields = ("name",)
-    prepopulated_fields = {"slug": ("name",)}
-    readonly_fields = ("cost_percent", )
-
-
 admin.site.register(Token, TokenAdmin)
-admin.site.register(Type, TypeAdmin)
-admin.site.register(Brand, BrandAdmin)
-admin.site.register(Transport, TransportAdmin)
-admin.site.register(City, CityAdmin)
-admin.site.register(Map, MapAdmin)
+admin.site.register(Customer, CustomerAdmin)
+admin.site.register(Vehicle, VehicleAdmin)
+admin.site.register(Rent, RentAdmin)

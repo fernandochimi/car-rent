@@ -1,8 +1,8 @@
 # coding: utf-8
 from django.test import TestCase
 
-from factories import TokenFactory, TypeFactory, BrandFactory,\
-    TransportFactory, CityFactory, MapFactory
+from factories import TokenFactory,\
+    CustomerFactory, VehicleFactory, RentFactory
 
 
 class TokenTest(TestCase):
@@ -14,47 +14,31 @@ class TokenTest(TestCase):
         self.assertEqual(unicode(self.token), u"{0}".format(self.token.token))
 
 
-class TypeTest(TestCase):
+class CustomerTest(TestCase):
     def setUp(self):
-        self.type = TypeFactory()
+        self.customer = CustomerFactory()
 
     def test_01_unicode(self):
-        "Type must be a unicode"
-        self.assertEqual(unicode(self.type), u"{0}".format(self.type.name))
+        "Customer must be a unicode"
+        self.assertEqual(
+            unicode(self.customer), u"{0}".format(self.customer.name))
 
 
-class BrandTest(TestCase):
+class VehicleTest(TestCase):
     def setUp(self):
-        self.brand = BrandFactory()
+        self.vehicle = VehicleFactory()
 
     def test_01_unicode(self):
-        "Brand must be a unicode"
-        self.assertEqual(unicode(self.brand), u"{0}".format(self.brand.name))
+        "Vehicle must be a unicode"
+        self.assertEqual(
+            unicode(self.vehicle), u"{0}".format(self.vehicle.name))
 
 
-class TransportTest(TestCase):
+class RentTest(TestCase):
     def setUp(self):
-        self.transport = TransportFactory()
+        self.rent = RentFactory()
 
     def test_01_unicode(self):
-        "Transport must be a unicode"
-        self.assertEqual(unicode(self.transport), u"{0} - {1}".format(
-            self.transport.brand.name, self.transport.name))
-
-
-class CityTest(TestCase):
-    def setUp(self):
-        self.city = CityFactory()
-
-    def test_01_unicode(self):
-        "City must be a unicode"
-        self.assertEqual(unicode(self.city), u"{0}".format(self.city.name))
-
-
-class MapTest(TestCase):
-    def setUp(self):
-        self.map = MapFactory()
-
-    def test_01_unicode(self):
-        "Map must be a unicode"
-        self.assertEqual(unicode(self.map), u"{0}".format(self.map.name))
+        "Rent must be a unicode"
+        self.assertEqual(unicode(self.rent), u"{0} - {1}".format(
+            self.rent.customer.cpf, self.rent.vehicle.name))

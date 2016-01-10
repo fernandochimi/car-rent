@@ -8,12 +8,23 @@ from django.db import models
 
 from utils import unique_slugify
 
-GROUND, AIR, WATER = range(1, 4)
+MOTORCYCLE, CAR, UTILITY, TRUCK = range(1, 5)
 
-TRANSPORT_WAY_CHOICES = (
-    (GROUND, u'Ground'),
-    (AIR, u'Air'),
-    (WATER, u'Water'),
+A, B, C, D, E = range(1, 6)
+
+VEHICLES_CATEGORIES = (
+    (MOTORCYCLE, u'Motorcycle'),
+    (CAR, u'Car'),
+    (UTILITY, u'Utility'),
+    (TRUCK, u'Truck'),
+)
+
+CNH = (
+    (A, u'A'),
+    (B, u'B'),
+    (C, u'C'),
+    (D, u'D'),
+    (E, u'E'),
 )
 
 
@@ -34,82 +45,32 @@ class Token(models.Model):
         verbose_name, verbose_name_plural = "Token", "Token"
 
 
-class Type(models.Model):
-    name = models.CharField(
-        u'name', help_text=u"Ex: Truck, Bus, Car", max_length=255)
-    slug = models.SlugField(u'slug', unique=True)
-    date_added = models.DateTimeField(
-        default=datetime.now)
-    is_active = models.BooleanField(default=True)
+class Customer(models.Model):
+    cnh = models.IntegerField(
+        u'cnh', choices=CNH, default=CNH[1])
+    name = models.CharField(u'name', max_length=255)
+    cpf = models.CharField(u'cpf', max_length=14)
 
     def __unicode__(self):
         return u'{0}'.format(self.name)
 
-    def save(self, *args, **kwargs):
-        slug_str = "%s" % self.name
-        unique_slugify(self, slug_str)
-        super(Type, self).save(*args, **kwargs)
-
     class Meta:
-        verbose_name, verbose_name_plural = "Type", "Types"
+        verbose_name, verbose_name_plural = "Customer", "Customers"
 
 
-class Brand(models.Model):
+class Vehicle(models.Model):
+    vehicle_category = models.IntegerField(
+        u'vehicle_category',
+        choices=VEHICLES_CATEGORIES,
+        default=VEHICLES_CATEGORIES[1])
     name = models.CharField(
-        u'name', help_text=u"Ex: Scania, Volvo", max_length=255)
-    slug = models.SlugField(u'slug', unique=True)
-    date_added = models.DateTimeField(
-        default=datetime.now)
-    is_active = models.BooleanField(default=True)
-
-    def __unicode__(self):
-        return u'{0}'.format(self.name)
-
-    def save(self, *args, **kwargs):
-        slug_str = "%s" % self.name
-        unique_slugify(self, slug_str)
-        super(Brand, self).save(*args, **kwargs)
-
-    class Meta:
-        verbose_name, verbose_name_plural = "Brand", "Brands"
-
-
-class Transport(models.Model):
-    transport_way = models.IntegerField(
-        u'transport way',
-        choices=TRANSPORT_WAY_CHOICES,
-        default=TRANSPORT_WAY_CHOICES[0])
-    transport_type = models.ForeignKey(Type)
-    brand = models.ForeignKey(Brand)
-    name = models.CharField(
-        u'name', max_length=255, help_text='Ex: Marcopolo Audace 1050 HK')
+        u'name', max_length=255, help_text='Ex: Corsa Sedan')
     slug = models.SlugField(u'slug', unique=True)
     sign = models.CharField(
         u'sign', max_length=20, null=True, blank=True, unique=True)
-    autonomy = models.DecimalField(
-        u'autonomy', default=0, decimal_places=2, max_digits=8,
-        help_text='On kilometers. Ex: 12.2')
     date_added = models.DateTimeField(
         default=datetime.now)
-    is_active = models.BooleanField(default=True)
-
-    def __unicode__(self):
-        return u'{0} - {1}'.format(self.brand.name, self.name)
-
-    def save(self, *args, **kwargs):
-        slug_str = "%s" % self.name
-        unique_slugify(self, slug_str)
-        super(Transport, self).save(*args, **kwargs)
-
-    class Meta:
-        verbose_name, verbose_name_plural = "Transport", "Transports"
-
-
-class City(models.Model):
-    name = models.CharField(u'name', max_length=255, unique=True)
-    slug = models.SlugField(u'slug', unique=True)
-    date_added = models.DateTimeField(
-        default=datetime.now)
+    is_avaliable = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
 
     def __unicode__(self):
@@ -118,42 +79,30 @@ class City(models.Model):
     def save(self, *args, **kwargs):
         slug_str = "%s" % self.name
         unique_slugify(self, slug_str)
-        super(City, self).save(*args, **kwargs)
+        super(Vehicle, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name, verbose_name_plural = "City", "Cities"
+        verbose_name, verbose_name_plural = "Vehicle", "Vehicles"
 
 
-class Map(models.Model):
-    name = models.CharField(
-        u'name', help_text=u"Ex: SP Map, MG Map", max_length=255)
-    slug = models.SlugField(u'slug', unique=True)
-    transport = models.ForeignKey(Transport, related_name='transport_set')
-    city_origin = models.ForeignKey(City, related_name='cityorigin_set')
-    city_destiny = models.ForeignKey(City, related_name='citydestiny_set')
-    logistic_order = models.TextField(null=True, blank=True)
-    total_distance = models.DecimalField(
-        u'total distance', default=0, decimal_places=2, max_digits=11,
+class Rent(models.Model):
+    customer = models.ForeignKey(Customer, related_name='customer_set')
+    vehicle = models.ForeignKey(Vehicle, related_name='vehicle_set')
+    mileage = models.DecimalField(
+        u'mileage', default=0, decimal_places=2, max_digits=11,
         null=True, blank=True)
-    gas_value = models.DecimalField(
-        u'gas value', default=0, decimal_places=2, max_digits=11,
-        help_text='On KM', null=True, blank=True)
-    cost_percent = models.DecimalField(
-        u'cost percent', default=0, decimal_places=2, max_digits=11,
-        null=True, blank=True)
-    date_added = models.DateTimeField(
-        default=datetime.now)
-    is_active = models.BooleanField(default=True)
+    date_checkout = models.DateTimeField(
+        u'date checkout', null=True, blank=True)
+    date_checkin = models.DateTimeField(
+        u'date checkin', null=True, blank=True)
 
     def __unicode__(self):
-        return u'{0}'.format(self.name)
+        return u'{0} - {1}'.format(self.customer.cpf, self.vehicle.name)
 
-    def save(self, *args, **kwargs):
-        slug_str = "%s" % self.name
-        unique_slugify(self, slug_str)
-        self.cost_percent = (
-            self.total_distance * self.gas_value) / self.transport.autonomy
-        super(Map, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     self.mileage = (
+    #         self.total_distance * self.gas_value) / self.transport.autonomy
+    #     super(Rent, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name, verbose_name_plural = "Map", "Maps"
+        verbose_name, verbose_name_plural = "Rent", "Rents"

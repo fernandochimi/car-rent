@@ -8,7 +8,7 @@ DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'walmart_log.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'car_rent.sqlite3'),
     }
 }
 
@@ -29,7 +29,7 @@ LOGGING = {
         'log_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, '../walmart_log.log'),
+            'filename': os.path.join(BASE_DIR, '../car_rent.log'),
             'maxBytes': 1024 * 1024 * 5,
             'formatter': 'verbose',
         },
@@ -47,7 +47,7 @@ LOGGING = {
         'django': {
             'handlers': ['null', ],
         },
-        'walmart_log': {
+        'car_rent': {
             'handlers': ['log_file'],
             'level': 'DEBUG',
         },

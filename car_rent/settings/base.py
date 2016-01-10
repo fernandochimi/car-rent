@@ -29,7 +29,7 @@ INSTALLED_APPS = (
     'restless',
 
     # main app
-    'walmart_log',
+    'car_rent',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -82,5 +82,3 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-
-GOOGLE_MAPS_API_KEY = 'AIzaSyB_mUhJFOI8VjHUv5auVlmE0OPPtF9Gbqw'

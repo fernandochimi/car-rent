@@ -7,7 +7,7 @@ from settings import celery_app
 
 from models import City, Map, Transport
 
-logger = logging.getLogger('walmart_log.walmart_log.tasks')
+logger = logging.getLogger('car_rent.car_rent.tasks')
 
 
 @celery_app.task

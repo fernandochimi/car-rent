@@ -14,7 +14,7 @@ from models import Token, Type, \
 from tasks import create_map
 from utils import API_URL_DIRECTIONS, GOOGLE_MAPS_API_KEY
 
-logger = logging.getLogger('walmart_log.walmart_log.resources')
+logger = logging.getLogger('car_rent.car_rent.resources')
 
 
 class BaseResource(DjangoResource):

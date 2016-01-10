@@ -1,5 +1,4 @@
-#Django==1.8.8
-Django < 1.9
+Django==1.8.8
 django-flat-theme
 
 googlemaps==2.3

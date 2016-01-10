@@ -4,12 +4,13 @@ import factory.fuzzy
 import uuid
 
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
 
-from walmart_log.models import Token, Type,\
-     Brand, Transport, City, Map, TRANSPORT_WAY_CHOICES
+from car_rent.models import Token, Customer,\
+     Vehicle, Rent, VEHICLES_CATEGORIES, CNH
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -31,69 +32,37 @@ class TokenFactory(factory.django.DjangoModelFactory):
     is_active = True
 
 
-class TypeFactory(factory.django.DjangoModelFactory):
+class CustomerFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Type
+        model = Customer
 
+    cnh = factory.Iterator(
+        CNH, getter=lambda c: c[0])
     name = factory.Sequence(lambda n: u"Type %s" % n)
-    slug = factory.LazyAttributeSequence(
-        lambda o, n: u"%s-%d" % (slugify(o.name), n))
-    date_added = datetime.now()
-    is_active = True
+    cpf = factory.Sequence(lambda n: u"000.000.000-0%s" % n)
 
 
-class BrandFactory(factory.django.DjangoModelFactory):
+class VehicleFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Brand
+        model = Vehicle
 
-    name = factory.Sequence(lambda n: u"Brand %s" % n)
-    slug = factory.LazyAttributeSequence(
-        lambda o, n: u"%s-%d" % (slugify(o.name), n))
-    date_added = datetime.now()
-    is_active = True
-
-
-class TransportFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Transport
-
-    transport_way = factory.Iterator(
-        TRANSPORT_WAY_CHOICES, getter=lambda c: c[0])
-    transport_type = factory.SubFactory(TypeFactory)
-    brand = factory.SubFactory(BrandFactory)
+    vehicle_category = factory.Iterator(
+        VEHICLES_CATEGORIES, getter=lambda c: c[0])
     name = factory.Sequence(lambda n: u"Vehicle %s" % n)
     slug = factory.LazyAttributeSequence(
         lambda o, n: u"%s-%d" % (slugify(o.name), n))
     sign = factory.Sequence(lambda n: u"XXX-00%s" % n)
-    autonomy = factory.fuzzy.FuzzyDecimal(0.1, 99.9, 2)
     date_added = datetime.now()
+    is_avaliable = True
     is_active = True
 
 
-class CityFactory(factory.django.DjangoModelFactory):
+class RentFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = City
+        model = Rent
 
-    name = factory.Sequence(lambda n: u"City%s" % n)
-    slug = factory.LazyAttributeSequence(
-        lambda o, n: u"%s-%d" % (slugify(o.name), n))
-    date_added = datetime.now()
-    is_active = True
-
-
-class MapFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Map
-
-    name = factory.Sequence(lambda n: u"Map%s" % n)
-    slug = factory.LazyAttributeSequence(
-        lambda o, n: u"%s-%d" % (slugify(o.name), n))
-    transport = factory.SubFactory(TransportFactory)
-    city_origin = factory.SubFactory(CityFactory)
-    city_destiny = factory.SubFactory(CityFactory)
-    logistic_order = factory.Sequence(lambda n: "City %s" % n)
-    total_distance = factory.fuzzy.FuzzyDecimal(0.1, 99.9, 2)
-    gas_value = factory.fuzzy.FuzzyDecimal(0.1, 99.9, 2)
-    cost_percent = factory.fuzzy.FuzzyDecimal(0.1, 99.9, 2)
-    date_added = datetime.now()
-    is_active = True
+    customer = factory.SubFactory(CustomerFactory)
+    vehicle = factory.SubFactory(VehicleFactory)
+    mileage = factory.fuzzy.FuzzyDecimal(0.1, 99.9, 2)
+    date_checkout = datetime.now()
+    date_checkin = datetime.now() + relativedelta(days=1)

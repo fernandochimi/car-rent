@@ -3,7 +3,7 @@ doc:
 		open docs/_build/html/index.html
 
 test:
-		coverage run --source="walmart_log/walmart_log" --omit="../../**migrations**, ../../**tests**" ./walmart_log/manage.py test walmart_log -v 2 --settings=settings.test --failfast
+		coverage run --source="car_rent/car_rent" --omit="../../**migrations**, ../../**tests**" ./car_rent/manage.py test car_rent -v 2 --settings=settings.test --failfast
 		coverage report -m
 
 html:
