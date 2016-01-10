@@ -1,18 +1,15 @@
 # coding: utf-8
 import logging
-import requests
+# import requests
 
 from django.core.paginator import Paginator
 
 from restless.dj import DjangoResource
 from restless.exceptions import NotFound, Unauthorized
 from restless.preparers import FieldsPreparer
-from restless.resources import skip_prepare
 
-from models import Token, Type, \
-    Brand, Transport, City, Map
-from tasks import create_map
-from utils import API_URL_DIRECTIONS, GOOGLE_MAPS_API_KEY
+from models import Token, Customer, \
+    Vehicle, Rent
 
 logger = logging.getLogger('car_rent.car_rent.resources')
 
@@ -75,80 +72,32 @@ class BaseResource(DjangoResource):
         data['objects'] = self.paginator.page(self.page).object_list
         return data
 
-    def get_google_info(self, origin, destination, waypoints):
-        try:
-            response = requests.get(
-                API_URL_DIRECTIONS +
-                'origin={0}&destination={1}&key={2}&waypoints=optimize:true|{3}'.format(
-                    origin, destination, GOOGLE_MAPS_API_KEY,
-                    waypoints), timeout=5).json()
-            return self.prepare_route_data_info(response).value
-        except:
-            return False
-
-    @skip_prepare
-    def prepare_route_data_info(self, google_info):
-        waypoint_order = google_info.get('routes')[0].get('waypoint_order')
-
-        origin = self.request.GET.get('origin')
-        destination = self.request.GET.get('destination')
-        waypoint_list = []
-        logistic_order = []
-        try:
-            waypoint_list = self.request.GET.get('waypoints').split("|")
-            logistic_order = [waypoint_list[i] for i in waypoint_order]
-        except:
-            pass
-        logistic_order.insert(0, origin)
-        logistic_order.insert(len(waypoint_order)+1, destination)
-
-        info = google_info.get('routes')[0].get('legs')
-        list_info = []
-        for i in info:
-            info_route = {
-                'distance': i.get('distance').get('value'),
-                'start_address': i.get('start_address'),
-                'end_address': i.get('end_address'),
-            }
-            list_info.append(info_route)
-
-        sum_distance = sum([i.get('distance') for i in list_info])
-
-        route_data = {
-            'logistic_order': logistic_order,
-            'name': self.request.GET.get('name'),
-            'transport_sign': self.request.GET.get('transport_sign'),
-            'city_origin': list_info[0].get('start_address'),
-            'city_destiny': list_info[-1].get('end_address'),
-            'total_distance': sum_distance / 1000,
-            'gas_value': self.request.GET.get('gas_value'),
-        }
-        create_map.delay(route_data)
-        return route_data
-
     def prepare(self, data):
         prepped = super(BaseResource, self).prepare(data)
         try:
             date_added = prepped['date_added']
+            date_checkout = prepped['date_checkout']
+            date_checkin = prepped['date_checkin']
             format_date = '%Y-%m-%d %H:%M:%S'
             prepped['date_added'] = date_added.strftime(format_date)
+            prepped['date_checkout'] = date_checkout.strftime(format_date)
+            prepped['date_checkin'] = date_checkin.strftime(format_date)
         except:
             pass
         return prepped
 
 
-class TypeResource(BaseResource):
+class CustomerResource(BaseResource):
     fields = {
         'id': 'id',
+        'cnh': 'cnh',
         'name': 'name',
-        'slug': 'slug',
-        'date_added': 'date_added',
-        'is_active': 'is_active',
+        'cpf': 'cpf',
     }
 
     def queryset(self, request):
         filters = self.filters(request=self.request)
-        qs = Type.objects.all()
+        qs = Customer.objects.all()
         return qs.filter(**filters)
 
     def list(self):
@@ -159,152 +108,95 @@ class TypeResource(BaseResource):
         self.preparer.fields = self.fields
         try:
             return self.queryset(request=self.request).get(id=pk)
-        except Type.DoesNotExist:
+        except Customer.DoesNotExist:
             return self.not_found(self.__class__.__name__, "ID", pk)
 
     def create(self):
-        return Type.objects.create(
+        return Customer.objects.create(
+            cnh=self.data['cnh'],
             name=self.data['name'],
+            cpf=self.data['cpf'],
         )
 
     def update(self, pk):
         try:
-            up_type = self.queryset(request=self.request).get(id=pk)
-        except Type.DoesNotExist:
+            up_customer = self.queryset(request=self.request).get(id=pk)
+        except Customer.DoesNotExist:
             return self.not_found(self.__class__.__name__, "ID", pk)
-        up_type.name = self.data['name']
-        up_type.slug = self.data['slug']
-        up_type.save()
-        return up_type
+        up_customer.chn = self.data['cnh']
+        up_customer.chn = self.data['name']
+        up_customer.save()
+        return up_customer
 
     def delete(self, pk):
-        return Type.objects.get(id=pk).delete()
+        return Customer.objects.get(id=pk).delete()
 
 
-class BrandResource(BaseResource):
+class VehicleResource(BaseResource):
     fields = {
         'id': 'id',
-        'name': 'name',
-        'slug': 'slug',
-        'date_added': 'date_added',
-        'is_active': 'is_active',
-    }
-
-    def queryset(self, request):
-        filters = self.filters(request=self.request)
-        qs = Brand.objects.all()
-        return qs.filter(**filters)
-
-    def list(self):
-        self.preparer.fields = self.fields
-        return self.queryset(request=self.request)
-
-    def detail(self, pk):
-        self.preparer.fields = self.fields
-        try:
-            return self.queryset(request=self.request).get(id=pk)
-        except:
-            return self.not_found(self.__class__.__name__, "ID", pk)
-
-    def create(self):
-        return Brand.objects.create(
-            name=self.data['name'],
-        )
-
-    def update(self, pk):
-        try:
-            brand = self.queryset(request=self.request).get(id=pk)
-        except Brand.DoesNotExist:
-            return self.not_found(self.__class__.__name__, "ID", pk)
-        brand.name = self.data['name']
-        brand.slug = self.data['slug']
-        brand.save()
-        return brand
-
-    def delete(self, pk):
-        return Brand.objects.get(id=pk).delete()
-
-
-class TransportResource(BaseResource):
-    preparer_list = {
-        'id': 'id',
-        'name': 'name',
-        'slug': 'slug',
-        'date_added': 'date_added',
-        'is_active': 'is_active',
-    }
-
-    preparer_detail = {
-        'id': 'id',
-        'transport_way': 'transport_way',
-        'transport_type': 'transport_type.slug',
-        'brand': 'brand.slug',
+        'vehicle_category': 'vehicle_category',
         'name': 'name',
         'slug': 'slug',
         'sign': 'sign',
-        'autonomy': 'autonomy',
         'date_added': 'date_added',
+        'is_avaliable': 'is_avaliable',
         'is_active': 'is_active',
     }
 
     def queryset(self, request):
         filters = self.filters(request=self.request)
-        qs = Transport.objects.all()
+        qs = Vehicle.objects.all()
         return qs.filter(**filters)
 
     def list(self):
-        self.preparer.fields = self.preparer_list
+        self.preparer.fields = self.fields
         return self.queryset(request=self.request)
 
     def detail(self, pk):
-        self.preparer.fields = self.preparer_detail
+        self.preparer.fields = self.fields
         try:
             return self.queryset(request=self.request).get(id=pk)
         except:
             return self.not_found(self.__class__.__name__, "ID", pk)
 
     def create(self):
-        return Transport.objects.create(
-            transport_way=self.data['transport_way'],
-            transport_type=Type.objects.get(slug=self.data['transport_type']),
-            brand=Brand.objects.get(slug=self.data['brand']),
+        return Vehicle.objects.create(
+            vehicle_category=self.data['vehicle_category'],
             name=self.data['name'],
             sign=self.data['sign'],
-            autonomy=self.data['autonomy'],
         )
 
     def update(self, pk):
         try:
-            transport = Transport.objects.get(id=pk)
-        except Transport.DoesNotExist:
+            up_vehicle = self.queryset(request=self.request).get(id=pk)
+        except Vehicle.DoesNotExist:
             return self.not_found(self.__class__.__name__, "ID", pk)
-        transport.transport_way = self.data['transport_way']
-        transport.transport_type = Type.objects.get(
-            slug=self.data['transport_type'])
-        transport.brand = Brand.objects.get(slug=self.data['brand'])
-        transport.name = self.data['name']
-        transport.slug = self.data['slug']
-        transport.sign = self.data['sign']
-        transport.autonomy = self.data['autonomy']
-        transport.save()
-        return transport
+        up_vehicle.vehicle_category = self.data['vehicle_category']
+        up_vehicle.name = self.data['name']
+        up_vehicle.slug = self.data['slug']
+        up_vehicle.sign = self.data['sign']
+        up_vehicle.is_avaliable = self.data['is_avaliable']
+        up_vehicle.is_active = self.data['is_active']
+        up_vehicle.save()
+        return up_vehicle
 
     def delete(self, pk):
-        return Transport.objects.get(id=pk).delete()
+        return Vehicle.objects.get(id=pk).delete()
 
 
-class CityResource(BaseResource):
+class RentResource(BaseResource):
     fields = {
-        'id': 'id',
-        'name': 'name',
-        'slug': 'slug',
-        'date_added': 'date_added',
-        'is_active': 'is_active',
+        'customer': 'customer.name',
+        'vehicle': 'vehicle.name',
+        'mileage': 'mileage',
+        'date_checkout': 'date_checkout',
+        'date_checkin': 'date_checkin',
     }
 
     def queryset(self, request):
         filters = self.filters(request=self.request)
-        qs = City.objects.all()
+        qs = Rent.objects.all()
         return qs.filter(**filters)
 
     def list(self):
@@ -318,56 +210,27 @@ class CityResource(BaseResource):
         except:
             return self.not_found(self.__class__.__name__, "ID", pk)
 
+    def create(self):
+        return Rent.objects.create(
+            customer=Customer.objects.get(id=self.data['customer']),
+            vehicle=Vehicle.objects.get(id=self.data['vehicle']),
+            mileage=self.data['mileage'],
+            date_checkout=self.data['date_checkout'],
+            date_checkin=self.data['date_checkin'],
+        )
 
-class MapResource(BaseResource):
-    preparer_list = {
-        'id': 'id',
-        'name': 'name',
-        'slug': 'slug',
-        'transport': 'transport.sign',
-    }
-
-    preparer_detail = {
-        'id': 'id',
-        'name': 'name',
-        'slug': 'slug',
-        'transport': 'transport.sign',
-        'city_origin': 'city_origin.name',
-        'city_destiny': 'city_destiny.name',
-        'logistic_order': 'logistic_order',
-        'total_distance': 'total_distance',
-        'gas_value': 'gas_value',
-        'cost_percent': 'cost_percent',
-        'date_added': 'date_added',
-        'is_active': 'is_active',
-    }
-
-    def __init__(self, *args, **kwargs):
-        super(MapResource, self).__init__(*args, **kwargs)
-        self.http_methods.update({
-            'get_map': {
-                'GET': 'get_map'
-            }
-        })
-
-    def queryset(self, request):
-        filters = self.filters(request=self.request)
-        qs = Map.objects.all()
-        return qs.filter(**filters)
-
-    def list(self):
-        self.preparer.fields = self.preparer_list
-        return self.queryset(request=self.request)
-
-    def detail(self, slug):
-        self.preparer.fields = self.preparer_detail
+    def update(self, pk):
         try:
-            return self.queryset(request=self.request).get(slug=slug)
-        except:
-            return self.not_found(self.__class__.__name__, "SLUG", slug)
+            up_transport = Rent.objects.get(id=pk)
+        except Rent.DoesNotExist:
+            return self.not_found(self.__class__.__name__, "ID", pk)
+        up_transport.customer = Customer.objects.get(id=self.data['customer'])
+        up_transport.vehicle = Vehicle.objects.get(id=self.data['vehicle'])
+        up_transport.mileage = self.data['mileage']
+        up_transport.date_checkout = self.data['date_checkout']
+        up_transport.date_checkin = self.data['date_checkin']
+        up_transport.save()
+        return up_transport
 
-    def get_map(self, *args, **kwargs):
-        origin = self.request.GET.get('origin')
-        destination = self.request.GET.get('destination')
-        waypoints = self.request.GET.get('waypoints') or ""
-        return self.get_google_info(origin, destination, waypoints)
+    def delete(self, pk):
+        return Rent.objects.get(id=pk).delete()

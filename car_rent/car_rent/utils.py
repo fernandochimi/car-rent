@@ -4,12 +4,7 @@ import re
 from datetime import datetime
 from decimal import Decimal
 
-from django.conf import settings
 from django.template.defaultfilters import slugify
-
-GOOGLE_MAPS_API_KEY = getattr(settings, 'GOOGLE_MAPS_API_KEY', '')
-
-API_URL_DIRECTIONS = 'https://maps.googleapis.com/maps/api/directions/json?'
 
 
 def jdefault(o):

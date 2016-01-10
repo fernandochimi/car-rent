@@ -1,21 +1,13 @@
 # coding: utf-8
 from django.conf.urls import url, patterns, include
 
-from resources import TypeResource, BrandResource,\
-    TransportResource, CityResource, MapResource
+from resources import CustomerResource, VehicleResource,\
+    RentResource
 
 
 urlpatterns = patterns(
     '',
-    url(r'^api/v1/type/', include(TypeResource.urls())),
-    url(r'^api/v1/brand/', include(BrandResource.urls())),
-    url(r'^api/v1/transport/', include(TransportResource.urls())),
-    url(r'^api/v1/city/', include(CityResource.urls())),
-
-    url(r'^api/v1/map/$', MapResource.as_list(), name='map_list'),
-    url(
-        r'^api/v1/map/(?P<slug>[-_\w]+)/$',
-        MapResource.as_detail(), name='map_detail'),
-    url(r'api/v1/get-map/$',
-        MapResource.as_view('get_map'), name='get_map'),
+    url(r'^api/v1/customer/', include(CustomerResource.urls())),
+    url(r'^api/v1/vehicle/', include(VehicleResource.urls())),
+    url(r'^api/v1/rent/', include(RentResource.urls())),
 )

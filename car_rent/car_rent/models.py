@@ -67,7 +67,7 @@ class Vehicle(models.Model):
         u'name', max_length=255, help_text='Ex: Corsa Sedan')
     slug = models.SlugField(u'slug', unique=True)
     sign = models.CharField(
-        u'sign', max_length=20, null=True, blank=True, unique=True)
+        u'sign', max_length=20, null=True, blank=True)
     date_added = models.DateTimeField(
         default=datetime.now)
     is_avaliable = models.BooleanField(default=True)

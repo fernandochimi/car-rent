@@ -27,11 +27,10 @@ class VehicleAdmin(admin.ModelAdmin):
 
 
 class RentAdmin(admin.ModelAdmin):
-    list_display = ("name", "sign", "autonomy", "date_added", "is_active",)
-    list_filter = ("transport_way", "transport_type", "brand", "is_active",)
-    date_hierarchy = "date_added"
-    search_fields = ("name", "slug", "sign",)
-    prepopulated_fields = {"slug": ("name",)}
+    list_display = (
+        "customer", "vehicle", "mileage", "date_checkout", "date_checkin",)
+    date_hierarchy = "date_checkout"
+    search_fields = ("customer__name", "vehicle__name", )
 
 
 admin.site.register(Token, TokenAdmin)
