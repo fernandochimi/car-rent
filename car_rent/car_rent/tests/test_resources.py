@@ -169,30 +169,28 @@ class RentResourceTest(BaseResourceTest):
             self.token.token))
         self.assertEqual(response.status_code, 404)
 
-    # def test_04_create_rent(self):
-    #     "Create a rent"
-    #     print json.dumps(self.new_rent, default=jdefault)
-    #     response = self.client.post("/api/v1/rent/?token={0}".format(
-    #         self.token.token), json.dumps(
-    #         self.new_rent, default=jdefault),
-    #         content_type="application/json")
-    #     print response
-    #     self.assertEqual(response.status_code, 201)
+    def test_04_create_rent(self):
+        "Create a rent"
+        response = self.client.post("/api/v1/rent/?token={0}".format(
+            self.token.token), json.dumps(
+            self.new_rent, default=jdefault),
+            content_type="application/json")
+        self.assertEqual(response.status_code, 201)
 
-    # def test_05_update_rent(self):
-    #     "Update a rent"
-    #     self.new_rent.slug = "new-update-rent"
-    #     self.new_rent.save()
-    #     response = self.client.put("/api/v1/rent/{0}/?token={1}".format(
-    #         self.new_rent.id, self.token.token),
-    #         json.dumps(self.new_rent, default=jdefault))
-    #     self.assertEqual(response.status_code, 202)
+    def test_05_update_rent(self):
+        "Update a rent"
+        self.new_rent.slug = "new-update-rent"
+        self.new_rent.save()
+        response = self.client.put("/api/v1/rent/{0}/?token={1}".format(
+            self.new_rent.id, self.token.token),
+            json.dumps(self.new_rent, default=jdefault))
+        self.assertEqual(response.status_code, 202)
 
-    # def test_06_update_rent_does_not_exist(self):
-    #     "Update a rent that does not exist"
-    #     self.new_rent.slug = "new-update-rent"
-    #     self.new_rent.save()
-    #     response = self.client.put("/api/v1/rent/0/?token={1}".format(
-    #         self.new_rent.id, self.token.token),
-    #         json.dumps(self.new_rent, default=jdefault))
-    #     self.assertEqual(response.status_code, 404)
+    def test_06_update_rent_does_not_exist(self):
+        "Update a rent that does not exist"
+        self.new_rent.slug = "new-update-rent"
+        self.new_rent.save()
+        response = self.client.put("/api/v1/rent/0/?token={1}".format(
+            self.new_rent.id, self.token.token),
+            json.dumps(self.new_rent, default=jdefault))
+        self.assertEqual(response.status_code, 404)
