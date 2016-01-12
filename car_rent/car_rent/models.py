@@ -49,7 +49,7 @@ class Customer(models.Model):
     cnh = models.IntegerField(
         u'cnh', choices=CNH, default=CNH[1])
     name = models.CharField(u'name', max_length=255)
-    cpf = models.CharField(u'cpf', max_length=14)
+    cpf = models.CharField(u'cpf', max_length=11, unique=True)
 
     def __unicode__(self):
         return u'{0}'.format(self.name)
@@ -67,7 +67,7 @@ class Vehicle(models.Model):
         u'name', max_length=255, help_text='Ex: Corsa Sedan')
     slug = models.SlugField(u'slug', unique=True)
     sign = models.CharField(
-        u'sign', max_length=20, null=True, blank=True)
+        u'sign', max_length=20, null=True, blank=True, unique=True)
     date_added = models.DateTimeField(
         default=datetime.now)
     is_avaliable = models.BooleanField(default=True)

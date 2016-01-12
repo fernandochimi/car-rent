@@ -72,6 +72,7 @@ class CustomerResourceTest(BaseResourceTest):
         response = self.client.post("/api/v1/customer/?token={0}".format(
             self.token.token), json.dumps(self.new_customer, default=jdefault),
             content_type="application/json")
+        print response
         self.assertEqual(response.status_code, 201)
 
     def test_05_update_customer(self):

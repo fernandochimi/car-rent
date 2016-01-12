@@ -2,6 +2,8 @@
 import logging
 # import requests
 
+from datetime import datetime
+
 from django.core.paginator import Paginator
 
 from restless.dj import DjangoResource
@@ -79,9 +81,11 @@ class BaseResource(DjangoResource):
             date_checkout = prepped['date_checkout']
             date_checkin = prepped['date_checkin']
             format_date = '%Y-%m-%d %H:%M:%S'
-            prepped['date_added'] = date_added.strftime(format_date)
-            prepped['date_checkout'] = date_checkout.strftime(format_date)
-            prepped['date_checkin'] = date_checkin.strftime(format_date)
+            prepped['date_added'] = datetime.strptime(date_added, format_date)
+            prepped['date_checkout'] = datetime.strptime(
+                date_checkout, format_date)
+            prepped['date_checkin'] = datetime.strptime(
+                date_checkin, format_date)
         except:
             pass
         return prepped
@@ -112,6 +116,7 @@ class CustomerResource(BaseResource):
             return self.not_found(self.__class__.__name__, "ID", pk)
 
     def create(self):
+        self.preparer.fields = self.fields
         return Customer.objects.create(
             cnh=self.data['cnh'],
             name=self.data['name'],
@@ -119,6 +124,7 @@ class CustomerResource(BaseResource):
         )
 
     def update(self, pk):
+        self.preparer.fields = self.fields
         try:
             up_customer = self.queryset(request=self.request).get(id=pk)
         except Customer.DoesNotExist:
@@ -161,6 +167,7 @@ class VehicleResource(BaseResource):
             return self.not_found(self.__class__.__name__, "ID", pk)
 
     def create(self):
+        self.preparer.fields = self.fields
         return Vehicle.objects.create(
             vehicle_category=self.data['vehicle_category'],
             name=self.data['name'],
@@ -168,6 +175,7 @@ class VehicleResource(BaseResource):
         )
 
     def update(self, pk):
+        self.preparer.fields = self.fields
         try:
             up_vehicle = self.queryset(request=self.request).get(id=pk)
         except Vehicle.DoesNotExist:
@@ -187,8 +195,8 @@ class VehicleResource(BaseResource):
 
 class RentResource(BaseResource):
     fields = {
-        'customer': 'customer.name',
-        'vehicle': 'vehicle.name',
+        'customer': 'customer.cpf',
+        'vehicle': 'vehicle.slug',
         'mileage': 'mileage',
         'date_checkout': 'date_checkout',
         'date_checkin': 'date_checkin',
@@ -211,26 +219,29 @@ class RentResource(BaseResource):
             return self.not_found(self.__class__.__name__, "ID", pk)
 
     def create(self):
+        self.preparer.fields = self.fields
+        print self.preparer.fields
         return Rent.objects.create(
-            customer=Customer.objects.get(id=self.data['customer']),
-            vehicle=Vehicle.objects.get(id=self.data['vehicle']),
+            customer=Customer.objects.get(cpf=self.data['customer']),
+            vehicle=Vehicle.objects.get(slug=self.data['vehicle']),
             mileage=self.data['mileage'],
             date_checkout=self.data['date_checkout'],
             date_checkin=self.data['date_checkin'],
         )
 
     def update(self, pk):
+        self.preparer.fields = self.fields
         try:
-            up_transport = Rent.objects.get(id=pk)
+            up_rent = Rent.objects.get(id=pk)
         except Rent.DoesNotExist:
             return self.not_found(self.__class__.__name__, "ID", pk)
-        up_transport.customer = Customer.objects.get(id=self.data['customer'])
-        up_transport.vehicle = Vehicle.objects.get(id=self.data['vehicle'])
-        up_transport.mileage = self.data['mileage']
-        up_transport.date_checkout = self.data['date_checkout']
-        up_transport.date_checkin = self.data['date_checkin']
-        up_transport.save()
-        return up_transport
+        up_rent.customer = Customer.objects.get(id=self.data['customer'])
+        up_rent.vehicle = Vehicle.objects.get(id=self.data['vehicle'])
+        up_rent.mileage = self.data['mileage']
+        up_rent.date_checkout = self.data['date_checkout']
+        up_rent.date_checkin = self.data['date_checkin']
+        up_rent.save()
+        return up_rent
 
     def delete(self, pk):
         return Rent.objects.get(id=pk).delete()
