@@ -22,8 +22,8 @@ class BaseResourceTest(TestCase):
 
         self.new_customer = CustomerFactory.create(
             cnh=1,
-            name=u"Fulano de Tal",
-            cpf="780.089.098-88",
+            name=u"New Customer",
+            cpf=u"780.089.098-88",
         )
         self.new_vehicle = VehicleFactory.create(
             vehicle_category=1,

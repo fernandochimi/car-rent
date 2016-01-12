@@ -38,7 +38,7 @@ class CustomerFactory(factory.django.DjangoModelFactory):
 
     cnh = factory.Iterator(
         CNH, getter=lambda c: c[0])
-    name = factory.Sequence(lambda n: u"Type %s" % n)
+    name = factory.Sequence(lambda n: u"Customer %s" % n)
     cpf = factory.Sequence(lambda n: u"000.000.000-0%s" % n)
 
 
