@@ -12,6 +12,7 @@ from restless.preparers import FieldsPreparer
 
 from models import Token, Customer, \
     Vehicle, Rent
+from utils import FORMAT_DATE
 
 logger = logging.getLogger('car_rent.car_rent.resources')
 
@@ -80,12 +81,11 @@ class BaseResource(DjangoResource):
             date_added = prepped['date_added']
             date_checkout = prepped['date_checkout']
             date_checkin = prepped['date_checkin']
-            format_date = '%Y-%m-%d %H:%M:%S'
-            prepped['date_added'] = datetime.strptime(date_added, format_date)
+            prepped['date_added'] = datetime.strptime(date_added, FORMAT_DATE)
             prepped['date_checkout'] = datetime.strptime(
-                date_checkout, format_date)
+                date_checkout, FORMAT_DATE)
             prepped['date_checkin'] = datetime.strptime(
-                date_checkin, format_date)
+                date_checkin, FORMAT_DATE)
         except:
             pass
         return prepped
@@ -204,6 +204,11 @@ class RentResource(BaseResource):
         'date_checkin': 'date_checkin',
     }
 
+    error_fields = {
+        'msg': 'This car is not avaliable to rent. Please choose another one',
+        'status': False,
+    }
+
     def queryset(self, request):
         filters = self.filters(request=self.request)
         qs = Rent.objects.all()
@@ -222,20 +227,21 @@ class RentResource(BaseResource):
 
     def create(self):
         self.preparer.fields = self.fields
-        create_rent = Rent.objects.create(
-            customer=Customer.objects.get(cpf=self.data['customer']),
-            vehicle=Vehicle.objects.get(slug=self.data['vehicle']),
-            mileage=self.data['mileage'],
-            date_checkout=self.data['date_checkout'],
-            date_checkin=self.data['date_checkin'],
-        )
-        if not create_rent.vehicle.is_avaliable:
-            return {
-                'status': False,
-                'msg': 'This car is not avaliable to rent.\
-                    Please choose another one',
-            }
-        return create_rent
+        create_rent = {
+            'customer': Customer.objects.get(cpf=self.data['customer']),
+            'vehicle': Vehicle.objects.get(slug=self.data['vehicle']),
+            'mileage': self.data['mileage'],
+            'date_checkout': self.data['date_checkout'],
+            'date_checkin': self.data['date_checkin'],
+        }
+        try:
+            get_vehicle = create_rent['vehicle']
+            if not get_vehicle.is_avaliable:
+                self.preparer.fields = self.error_fields
+                return self.preparer.fields
+            return Rent.objects.create(**create_rent)
+        except:
+            return False
 
     def update(self, pk):
         self.preparer.fields = self.fields

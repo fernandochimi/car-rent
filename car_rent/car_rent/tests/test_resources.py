@@ -23,10 +23,9 @@ class BaseResourceTest(TestCase):
         self.new_customer = CustomerFactory.create(
             cnh=1,
             name=u"New Customer",
-            cpf=factory.Sequence(lambda n: u"000.000.000-0%s" % n),
+            cpf="400.900.388-00",
         )
-        self.new_customer.cpf = u"780.089.098-88"
-        self.new_customer.save()
+
         self.new_vehicle = VehicleFactory.create(
             vehicle_category=1,
             name=u"New Vehicle",
@@ -36,6 +35,7 @@ class BaseResourceTest(TestCase):
             is_avaliable=True,
             is_active=True,
         )
+
         self.new_rent = RentFactory.create(
             customer=factory.SubFactory(CustomerFactory),
             vehicle=factory.SubFactory(VehicleFactory),
@@ -74,7 +74,6 @@ class CustomerResourceTest(BaseResourceTest):
         response = self.client.post("/api/v1/customer/?token={0}".format(
             self.token.token), json.dumps(self.new_customer, default=jdefault),
             content_type="application/json")
-        print response
         self.assertEqual(response.status_code, 201)
 
     def test_05_update_customer(self):
@@ -126,6 +125,7 @@ class VehicleResourceTest(BaseResourceTest):
         response = self.client.post("/api/v1/vehicle/?token={0}".format(
             self.token.token), json.dumps(self.new_vehicle, default=jdefault),
             content_type="application/json")
+        print response
         self.assertEqual(response.status_code, 201)
 
     def test_05_update_vehicle(self):
@@ -178,6 +178,7 @@ class RentResourceTest(BaseResourceTest):
             self.token.token), json.dumps(
             self.new_rent, default=jdefault),
             content_type="application/json")
+        print response
         self.assertEqual(response.status_code, 201)
 
     def test_05_update_rent(self):

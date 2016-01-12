@@ -6,6 +6,8 @@ from decimal import Decimal
 
 from django.template.defaultfilters import slugify
 
+FORMAT_DATE = '%Y-%m-%d %H:%M:%S'
+
 
 def jdefault(o):
     if type(o) is datetime.date or type(o) is datetime:

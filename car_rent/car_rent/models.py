@@ -6,7 +6,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
-from utils import unique_slugify
+from utils import unique_slugify, FORMAT_DATE
 
 MOTORCYCLE, CAR, UTILITY, TRUCK = range(1, 5)
 
@@ -49,7 +49,7 @@ class Customer(models.Model):
     cnh = models.IntegerField(
         u'cnh', choices=CNH, default=CNH[1])
     name = models.CharField(u'name', max_length=255)
-    cpf = models.CharField(u'cpf', max_length=11, unique=True)
+    cpf = models.CharField(u'cpf', max_length=11)
 
     def __unicode__(self):
         return u'{0}'.format(self.name)
@@ -67,7 +67,7 @@ class Vehicle(models.Model):
         u'name', max_length=255, help_text='Ex: Corsa Sedan')
     slug = models.SlugField(u'slug', unique=True)
     sign = models.CharField(
-        u'sign', max_length=20, null=True, blank=True, unique=True)
+        u'sign', max_length=20, null=True, blank=True)
     date_added = models.DateTimeField(
         default=datetime.now)
     is_avaliable = models.BooleanField(default=True)
@@ -100,7 +100,9 @@ class Rent(models.Model):
         return u'{0} - {1}'.format(self.customer.cpf, self.vehicle.name)
 
     def save(self, *args, **kwargs):
-        if not self.vehicle.is_avaliable and self.date_checkin == datetime.today():
+        if not self.vehicle.is_avaliable and (
+                datetime.strptime(
+                    self.date_checkin, FORMAT_DATE) >= datetime.today()):
             self.is_avaliable = True
 
         self.vehicle.is_avaliable = False
