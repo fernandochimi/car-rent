@@ -162,6 +162,7 @@ class VehicleResource(BaseResource):
     def detail(self, pk):
         self.preparer.fields = self.fields
         try:
+            print dir(self.queryset(request=self.request).get(id=pk))
             return self.queryset(request=self.request).get(id=pk)
         except:
             return self.not_found(self.__class__.__name__, "ID", pk)
@@ -195,6 +196,7 @@ class VehicleResource(BaseResource):
 
 class RentResource(BaseResource):
     fields = {
+        'id': 'id',
         'customer': 'customer.cpf',
         'vehicle': 'vehicle.slug',
         'mileage': 'mileage',
@@ -220,14 +222,20 @@ class RentResource(BaseResource):
 
     def create(self):
         self.preparer.fields = self.fields
-        print self.preparer.fields
-        return Rent.objects.create(
+        create_rent = Rent.objects.create(
             customer=Customer.objects.get(cpf=self.data['customer']),
             vehicle=Vehicle.objects.get(slug=self.data['vehicle']),
             mileage=self.data['mileage'],
             date_checkout=self.data['date_checkout'],
             date_checkin=self.data['date_checkin'],
         )
+        if not create_rent.vehicle.is_avaliable:
+            return {
+                'status': False,
+                'msg': 'This car is not avaliable to rent.\
+                    Please choose another one',
+            }
+        return create_rent
 
     def update(self, pk):
         self.preparer.fields = self.fields

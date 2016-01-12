@@ -99,10 +99,13 @@ class Rent(models.Model):
     def __unicode__(self):
         return u'{0} - {1}'.format(self.customer.cpf, self.vehicle.name)
 
-    # def save(self, *args, **kwargs):
-    #     self.mileage = (
-    #         self.total_distance * self.gas_value) / self.transport.autonomy
-    #     super(Rent, self).save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        if not self.vehicle.is_avaliable and self.date_checkin == datetime.today():
+            self.is_avaliable = True
+
+        self.vehicle.is_avaliable = False
+        self.vehicle.save()
+        super(Rent, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name, verbose_name_plural = "Rent", "Rents"

@@ -23,8 +23,10 @@ class BaseResourceTest(TestCase):
         self.new_customer = CustomerFactory.create(
             cnh=1,
             name=u"New Customer",
-            cpf=u"780.089.098-88",
+            cpf=factory.Sequence(lambda n: u"000.000.000-0%s" % n),
         )
+        self.new_customer.cpf = u"780.089.098-88"
+        self.new_customer.save()
         self.new_vehicle = VehicleFactory.create(
             vehicle_category=1,
             name=u"New Vehicle",
